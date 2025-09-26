@@ -201,21 +201,46 @@ export default function SingleAnalysisControls({
           <Card>
             <CardHeader><CardTitle>{t('analysis_options_title')}</CardTitle></CardHeader>
             <CardContent className="space-y-4">
-              {Object.keys(analysisOptions).map((key) => (
-                <div key={key} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={key}
-                    checked={analysisOptions[key as keyof AnalysisOptions]}
-                    onCheckedChange={(checked) =>
-                      setAnalysisOptions((prev) => ({
-                        ...prev,
-                        [key]: !!checked,
-                      }))
-                    }
-                  />
-                  <Label htmlFor={key} className="font-normal">{t(`option_${key}` as any)}</Label>
-                </div>
-              ))}
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="invalidData"
+                  checked={analysisOptions.invalidData}
+                  onCheckedChange={(checked) =>
+                    setAnalysisOptions((prev) => ({ ...prev, invalidData: !!checked }))
+                  }
+                />
+                <Label htmlFor="invalidData" className="font-normal">{t('option_invalid_data')}</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="exactDuplicates"
+                  checked={analysisOptions.exactDuplicates}
+                  onCheckedChange={(checked) =>
+                    setAnalysisOptions((prev) => ({ ...prev, exactDuplicates: !!checked }))
+                  }
+                />
+                <Label htmlFor="exactDuplicates" className="font-normal">{t('option_exact_duplicates')}</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="proximity"
+                  checked={analysisOptions.proximity}
+                  onCheckedChange={(checked) =>
+                    setAnalysisOptions((prev) => ({ ...prev, proximity: !!checked }))
+                  }
+                />
+                <Label htmlFor="proximity" className="font-normal">{t('option_proximity')}</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="geographic"
+                  checked={analysisOptions.geographic}
+                  onCheckedChange={(checked) =>
+                    setAnalysisOptions((prev) => ({ ...prev, geographic: !!checked }))
+                  }
+                />
+                <Label htmlFor="geographic" className="font-normal">{t('option_geographic')}</Label>
+              </div>
               <div className="pt-4 border-t">
                 <div className="flex items-center space-x-2">
                   <Checkbox id="load-map" checked={loadMapPoints} onCheckedChange={(checked) => setLoadMapPoints(!!checked)}/>
