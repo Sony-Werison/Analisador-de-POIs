@@ -100,6 +100,10 @@ const translations = {
       `Processando: ${current} / ${total}`,
     geocoding_done: 'Processo Concluído!',
     neighbors: 'Vizinhos',
+    geocode_mode_geocode: 'Geocodificar Endereços',
+    geocode_mode_geocode_desc: 'Converte informações de endereço (ex: logradouro, cidade) em coordenadas de latitude e longitude.',
+    geocode_mode_verify: 'Verificar Coordenadas',
+    geocode_mode_verify_desc: 'Verifica se as coordenadas de latitude e longitude existentes correspondem à cidade e estado informados na planilha.',
   },
   es: {
     // Simplified Spanish translations

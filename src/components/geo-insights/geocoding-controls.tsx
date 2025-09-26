@@ -10,13 +10,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useTranslations } from '@/lib/translations';
 import { useToast } from '@/hooks/use-toast';
 import { parseFile } from '@/lib/xlsx-utils';
 import { MappedHeaders, GeocodedRow } from '@/types';
 import { geocodeFile } from '@/lib/analysis-helpers';
+
+type GeocodeMode = 'geocode' | 'verify';
 
 type Props = {
   setIsLoading: (loading: boolean) => void;
@@ -46,7 +48,7 @@ export default function GeocodingControls({
   const [fileName, setFileName] = useState('');
   const [headers, setHeaders] = useState<string[]>([]);
   const [mappedHeaders, setMappedHeaders] = useState(initialMappedHeaders);
-  const [checkGeographic, setCheckGeographic] = useState(false);
+  const [geocodeMode, setGeocodeMode] = useState<GeocodeMode>('geocode');
 
   const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
@@ -77,24 +79,24 @@ export default function GeocodingControls({
     mapping.lon = headers.find((h) => ['longitude', 'lon', 'lng'].includes(h.toLowerCase()));
     setMappedHeaders(prev => ({...prev, ...mapping}));
   };
-
+  
   const isGeocodeDisabled = !file || (
-    !checkGeographic && Object.values(mappedHeaders).slice(0, 4).every(h => !h)
+    geocodeMode === 'geocode' && !mappedHeaders.address && !mappedHeaders.name && !mappedHeaders.city && !mappedHeaders.state
   ) || (
-    checkGeographic && (!mappedHeaders.lat || !mappedHeaders.lon || !mappedHeaders.city || !mappedHeaders.state)
+    geocodeMode === 'verify' && (!mappedHeaders.lat || !mappedHeaders.lon || !mappedHeaders.city || !mappedHeaders.state)
   );
   
   const handleGeocode = async () => {
-    if (isGeocodeDisabled) return;
+    if (isGeocodeDisabled || !file) return;
 
     setIsLoading(true);
     try {
         const results = await geocodeFile({
-            file: file!,
+            file: file,
             mappedHeaders,
             setLoadingMessage,
             t,
-            checkGeographic,
+            checkGeographic: geocodeMode === 'verify',
         });
         setGeocodedResults(results);
         toast({ title: t('geocoding_done')});
@@ -130,25 +132,33 @@ export default function GeocodingControls({
                 <CardTitle>{t('analysis_options_title')}</CardTitle>
             </CardHeader>
             <CardContent>
-                <div className="flex items-center space-x-2">
-                    <Checkbox
-                    id="geographic"
-                    checked={checkGeographic}
-                    onCheckedChange={(checked) => setCheckGeographic(!!checked)}
-                    />
-                    <Label htmlFor="geographic" className="font-normal">{t('option_geographic')}</Label>
-                </div>
+                <RadioGroup value={geocodeMode} onValueChange={(value) => setGeocodeMode(value as GeocodeMode)} className="gap-4">
+                    <div>
+                        <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="geocode" id="geocode-mode" />
+                            <Label htmlFor="geocode-mode">{t('geocode_mode_geocode')}</Label>
+                        </div>
+                        <p className="text-sm text-muted-foreground ml-6 mt-1">{t('geocode_mode_geocode_desc')}</p>
+                    </div>
+                    <div>
+                        <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="verify" id="verify-mode" />
+                            <Label htmlFor="verify-mode">{t('geocode_mode_verify')}</Label>
+                        </div>
+                        <p className="text-sm text-muted-foreground ml-6 mt-1">{t('geocode_mode_verify_desc')}</p>
+                    </div>
+                </RadioGroup>
             </CardContent>
         </Card>
         <Card>
             <CardHeader>
-                <CardTitle>{checkGeographic ? t('column_mapping_title') : t('column_mapping_geocode_title')}</CardTitle>
-                <CardDescription>{checkGeographic ? t('column_mapping_geo_note') : t('column_mapping_geocode_note')}</CardDescription>
+                <CardTitle>{geocodeMode === 'verify' ? t('column_mapping_title') : t('column_mapping_geocode_title')}</CardTitle>
+                <CardDescription>{geocodeMode === 'verify' ? t('column_mapping_geo_note') : t('column_mapping_geocode_note')}</CardDescription>
             </CardHeader>
             <CardContent className="grid grid-cols-2 gap-4">
-                {(checkGeographic ? [...addressHeaders, ...coordHeaders] : addressHeaders).map(key => (
+                {(geocodeMode === 'verify' ? [...coordHeaders, 'state', 'city'] : addressHeaders).map(key => (
                      <div key={key}>
-                     <Label htmlFor={`${key}-select-geo`}>{t( (checkGeographic && ['lat', 'lon', 'state', 'city'].includes(key)) ? `${key}_column` as any : `geocode_${key}` as any)}</Label>
+                     <Label htmlFor={`${key}-select-geo`}>{t( (geocodeMode === 'verify' && ['lat', 'lon', 'state', 'city'].includes(key)) ? `${key}_column` as any : `geocode_${key}` as any)}</Label>
                      <Select
                        value={mappedHeaders[key as keyof typeof mappedHeaders]}
                        onValueChange={(value) =>
