@@ -101,8 +101,12 @@ function MapController({
   const highlightLayerRef = useRef<L.FeatureGroup | null>(null);
 
   useEffect(() => {
-    if (bounds) {
-      map.fitBounds(bounds, { padding: [50, 50], maxZoom: 18 });
+    if (bounds && Object.keys(bounds).length > 0 && map) {
+      try {
+        map.fitBounds(bounds, { padding: [50, 50], maxZoom: 18 });
+      } catch (e) {
+        console.error("Error fitting bounds:", e, bounds);
+      }
     }
   }, [bounds, map]);
 
