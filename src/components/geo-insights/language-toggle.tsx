@@ -54,7 +54,7 @@ const languages = [
           <path d="M0 0v30h60V0z" />
         </clipPath>
         <path d="M0 0v30h60V0z" fill="#012169" />
-        <g clip-path="url(#uk-a)">
+        <g clipPath="url(#uk-a)">
           <path d="M0 0l60 30m0-30L0 30" stroke="#fff" strokeWidth="6" />
           <path d="M0 0l60 30m0-30L0 30" stroke="#C8102E" strokeWidth="4" />
           <path d="M30 0v30M0 15h60" stroke="#fff" strokeWidth="10" />
