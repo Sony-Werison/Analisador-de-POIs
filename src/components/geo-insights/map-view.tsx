@@ -158,12 +158,9 @@ export default function MapView({
   return (
     <div className="h-[calc(100vh-150px)] min-h-[600px] w-full rounded-lg shadow-inner overflow-hidden">
       <MapContainer
-        key={resolvedTheme}
         center={[-14.235, -51.925]}
         zoom={4}
         style={{ height: '100%', width: '100%' }}
-        // @ts-ignore
-        whenReady={() => console.log('Map is ready')}
       >
         {resolvedTheme === 'dark' ? (
           <TileLayer
