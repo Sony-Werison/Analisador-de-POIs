@@ -12,10 +12,10 @@ import type {
   MappedHeaders,
   POI,
 } from '@/types';
-import ControlPanel from '@/components/geo-insights/control-panel';
 import Header from '@/components/geo-insights/header';
 import { Card } from '@/components/ui/card';
 
+const ControlPanel = dynamic(() => import('@/components/geo-insights/control-panel'), { ssr: false });
 const MapView = dynamic(() => import('@/components/geo-insights/map-view'), {
   ssr: false,
 });

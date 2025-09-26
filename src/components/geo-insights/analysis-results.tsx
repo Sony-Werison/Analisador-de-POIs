@@ -13,7 +13,8 @@ import {
   GeocodedRow,
   POI,
 } from '@/types';
-import L, { LatLngBounds } from 'leaflet';
+import type { LatLngBounds } from 'leaflet';
+import L from 'leaflet';
 import { downloadXLSX } from '@/lib/xlsx-utils';
 import { useToast } from '@/hooks/use-toast';
 
