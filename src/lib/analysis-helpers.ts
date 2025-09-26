@@ -173,7 +173,7 @@ export async function geocodeFile({
         geocodedData.push(newRow);
         processedCount++;
         // To avoid rate limits
-        await new Promise(resolve => setTimeout(resolve, 7000));
+        await new Promise(resolve => setTimeout(resolve, 15000));
     }
     return geocodedData;
 }
