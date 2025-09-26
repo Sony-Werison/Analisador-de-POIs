@@ -40,10 +40,22 @@ const icons: { [key: string]: L.Icon } = {
   default: createIcon('grey'),
 };
 
-function MarkerCluster({ points }: { points: POI[] }) {
-  const map = useMap();
+function MapController({
+  map,
+  points,
+  bounds,
+  highlightedPoints,
+  highlightedBounds,
+}: {
+  map: L.Map | null;
+  points: POI[];
+  bounds?: LatLngBounds;
+  highlightedPoints: POI[];
+  highlightedBounds?: LatLngBounds;
+}) {
   const { t } = useTranslations();
   const markerClusterGroupRef = useRef<L.MarkerClusterGroup | null>(null);
+  const highlightLayerRef = useRef<L.FeatureGroup | null>(null);
 
   useEffect(() => {
     if (!map) return;
@@ -76,29 +88,8 @@ function MarkerCluster({ points }: { points: POI[] }) {
         markerClusterGroup.addLayers(markers);
       }
     }
-
-    return () => {
-        if(markerClusterGroupRef.current) {
-            // Clean up when component unmounts
-        }
-    }
   }, [points, map, t]);
 
-  return null;
-}
-
-
-function MapController({
-  bounds,
-  highlightedPoints,
-  highlightedBounds,
-}: {
-  bounds?: LatLngBounds;
-  highlightedPoints: POI[];
-  highlightedBounds?: LatLngBounds;
-}) {
-  const map = useMap();
-  const highlightLayerRef = useRef<L.FeatureGroup | null>(null);
 
   useEffect(() => {
     if (bounds && Object.keys(bounds).length > 0 && map) {
@@ -111,6 +102,7 @@ function MapController({
   }, [bounds, map]);
 
   useEffect(() => {
+    if (!map) return;
     // Clear previous highlight
     if (highlightLayerRef.current) {
       map.removeLayer(highlightLayerRef.current);
@@ -154,32 +146,46 @@ export default function MapView({
   highlightedBounds,
 }: MapViewProps) {
   const { resolvedTheme } = useTheme();
+  const mapContainerRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<L.Map | null>(null);
+
+  useEffect(() => {
+    if (mapContainerRef.current && !mapRef.current) {
+      mapRef.current = L.map(mapContainerRef.current, {
+        center: [-14.235, -51.925],
+        zoom: 4,
+      });
+
+      const tileUrl = resolvedTheme === 'dark'
+        ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+        : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+      
+      const attribution = resolvedTheme === 'dark'
+        ? '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+        : '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+
+      L.tileLayer(tileUrl, { attribution }).addTo(mapRef.current);
+    }
+    
+    // Cleanup function to remove map instance on component unmount
+    return () => {
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
+    };
+  }, [resolvedTheme]); // Re-run effect if theme changes
 
   return (
     <div className="h-[calc(100vh-150px)] min-h-[600px] w-full rounded-lg shadow-inner overflow-hidden">
-      <MapContainer
-        center={[-14.235, -51.925]}
-        zoom={4}
-        style={{ height: '100%', width: '100%' }}
-      >
-        {resolvedTheme === 'dark' ? (
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-            url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-          />
-        ) : (
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          />
-        )}
-        <MarkerCluster points={points} />
-        <MapController
-          bounds={bounds}
-          highlightedPoints={highlightedPoints}
-          highlightedBounds={highlightedBounds}
-        />
-      </MapContainer>
+      <div ref={mapContainerRef} style={{ height: '100%', width: '100%' }} />
+      <MapController
+        map={mapRef.current}
+        points={points}
+        bounds={bounds}
+        highlightedPoints={highlightedPoints}
+        highlightedBounds={highlightedBounds}
+      />
     </div>
   );
 }
