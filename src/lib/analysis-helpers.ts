@@ -221,10 +221,10 @@ export async function compareFiles({
   }): Promise<ComparisonResult> {
     setLoadingMessage(t('parsing_message'));
     const { data: dataA } = await parseFile(fileA);
-    const poisA = processParsedData(dataA, mappedHeadersA).filter(p => p.latitude !== null && p.longitude !== null);
+    const poisA = processParsedData(dataA, { lat: mappedHeadersA.lat, lon: mappedHeadersA.lon }).filter(p => p.latitude !== null && p.longitude !== null);
   
     const { data: dataB } = await parseFile(fileB);
-    const poisB = processParsedData(dataB, mappedHeadersB).filter(p => p.latitude !== null && p.longitude !== null);
+    const poisB = processParsedData(dataB, { lat: mappedHeadersB.lat, lon: mappedHeadersB.lon }).filter(p => p.latitude !== null && p.longitude !== null);
   
     const basePois = baseSheet === 'A' ? poisA : poisB;
     const comparePois = baseSheet === 'A' ? poisB : poisA;
@@ -292,10 +292,11 @@ export async function compareFiles({
     }
   
     return {
-      results: results,
-      sameSquareMatches: results.filter(r => r.distance <= 1), // example, can be refined
+      results: results.flat(),
+      sameSquareMatches: results.flat().filter(r => r.distance <= 1),
       basePlanilha: baseSheet,
       method: comparisonMethod,
+      totalBasePoints: basePois.length,
     };
   }
   

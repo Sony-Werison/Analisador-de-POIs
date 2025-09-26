@@ -8,6 +8,14 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { useTranslations } from '@/lib/translations';
 import { cn } from '@/lib/utils';
 import {
@@ -104,6 +112,33 @@ export default function AnalysisResults({
     }
   }
 
+  const handleDownloadComparison = () => {
+    if(comparisonResults && comparisonResults.results.length > 0) {
+      const dataToDownload = comparisonResults.results.map(item => {
+        const baseData: Record<string, any> = {};
+        for(const key in item.base) {
+          baseData[`BASE_${key}`] = item.base[key];
+        }
+
+        const matchData: Record<string, any> = {};
+        for(const key in item.match) {
+          matchData[`MATCH_${key}`] = item.match[key];
+        }
+
+        return {
+          ...baseData,
+          LINHA_BASE: item.base_row,
+          ...matchData,
+          LINHA_MATCH: item.match_row,
+          DISTANCIA_M: item.distance.toFixed(2),
+        }
+      })
+      downloadXLSX(dataToDownload, 'comparacao.xlsx');
+    } else {
+      toast({ description: t('download_no_data') });
+    }
+  }
+
   if (!analysisResults && !comparisonResults && !geocodedResults) {
     return null;
   }
@@ -164,6 +199,55 @@ export default function AnalysisResults({
             <h3 className="text-xl font-bold mt-6 mb-2">{t('downloads_title')}</h3>
             <Button onClick={handleDownloadGeocoded} className="w-full">{t('download_geocoded_report_button')}</Button>
         </div>
+      )}
+      {comparisonResults && (
+        <>
+          <h3 className="text-xl font-bold">{t('comparison_summary_title')}</h3>
+          <div className="p-4 rounded-lg bg-secondary/50 space-y-2 text-sm">
+            <div className="flex justify-between items-center">
+              <span className="font-medium text-muted-foreground">{t('total_base_points', comparisonResults.basePlanilha)}</span>
+              <span className="font-bold text-lg">{comparisonResults.totalBasePoints}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="font-medium text-muted-foreground">{t('points_with_match')}</span>
+              <span className="font-bold text-lg">{comparisonResults.results.length}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="font-medium text-muted-foreground">{t('same_square_meter_matches')}</span>
+              <span className="font-bold text-lg">{comparisonResults.sameSquareMatches.length}</span>
+            </div>
+          </div>
+          <div>
+            <h3 className="text-xl font-bold mt-6 mb-2">{t('downloads_title')}</h3>
+            <Button onClick={handleDownloadComparison} className="w-full">{t('download_comparison_report_button')}</Button>
+          </div>
+          <h3 className="text-xl font-bold mt-6 mb-2">{t('comparison_results_title')}</h3>
+          <div className="max-h-80 overflow-y-auto border rounded-lg">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{t('base_point_row')}</TableHead>
+                  <TableHead>{t('match_point_row')}</TableHead>
+                  <TableHead className="text-right">{t('distance_meters')}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {comparisonResults.results.slice(0, 100).map((r, i) => (
+                  <TableRow key={i}>
+                    <TableCell>{r.base_row}</TableCell>
+                    <TableCell>{r.match_row}</TableCell>
+                    <TableCell className="text-right">{r.distance.toFixed(2)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+          {comparisonResults.results.length > 100 && (
+            <p className="text-sm text-center text-muted-foreground mt-2">
+              Mostrando 100 de {comparisonResults.results.length} resultados. Baixe o relatório completo para ver todos.
+            </p>
+          )}
+        </>
       )}
     </div>
   );

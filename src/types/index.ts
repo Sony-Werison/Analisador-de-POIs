@@ -68,4 +68,5 @@ export type ComparisonResult = {
   sameSquareMatches: any[];
   basePlanilha: 'A' | 'B';
   method: ComparisonMethod;
+  totalBasePoints: number;
 };
