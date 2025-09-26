@@ -158,7 +158,20 @@ export default function ComparisonControls({
       <Card>
         <CardHeader><CardTitle>{t('comparison_method_title')}</CardTitle></CardHeader>
         <CardContent>
-            {/* Comparison method radio buttons */}
+          <RadioGroup value={comparisonMethod} onValueChange={(v) => setComparisonMethod(v as any)} className="gap-4">
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="m2" id="m2" />
+              <Label htmlFor="m2">{t('method_m2')}</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="nearest" id="nearest" />
+              <Label htmlFor="nearest">{t('method_nearest')}</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="radius" id="radius" />
+              <Label htmlFor="radius">{t('method_radius')}</Label>
+            </div>
+          </RadioGroup>
         </CardContent>
       </Card>
       
@@ -167,7 +180,16 @@ export default function ComparisonControls({
         <CardDescription>{t('base_spreadsheet_note')}</CardDescription>
         </CardHeader>
         <CardContent>
-            {/* Base sheet radio buttons */}
+            <RadioGroup value={baseSheet} onValueChange={(v) => setBaseSheet(v as any)} className="flex gap-4">
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="A" id="sheetA" />
+                <Label htmlFor="sheetA">{t('spreadsheet_a_short')}</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="B" id="sheetB" />
+                <Label htmlFor="sheetB">{t('spreadsheet_b_short')}</Label>
+              </div>
+            </RadioGroup>
         </CardContent>
       </Card>
 
