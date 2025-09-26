@@ -167,11 +167,16 @@ export default function SingleAnalysisControls({
 
   return (
     <div className="space-y-6 mt-4">
-      <div>
-        <Label htmlFor="file-input">{t('select_file')}</Label>
-        <Input id="file-input" type="file" onChange={handleFileChange} accept=".csv, .xlsx" />
-        {fileName && <p className="text-sm text-muted-foreground mt-2">{fileName}</p>}
-      </div>
+      <Card>
+        <CardHeader>
+            <CardTitle>{t('select_file')}</CardTitle>
+        </CardHeader>
+        <CardContent>
+            <Input id="file-input" type="file" onChange={handleFileChange} accept=".csv, .xlsx" />
+            {fileName && <p className="text-sm text-muted-foreground mt-2">{fileName}</p>}
+        </CardContent>
+      </Card>
+
 
       {headers.length > 0 && (
         <>

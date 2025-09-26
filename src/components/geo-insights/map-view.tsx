@@ -1,13 +1,12 @@
 
 'use client';
 
-import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import L, { type LatLngBounds } from 'leaflet';
 import 'leaflet.markercluster';
-import { useEffect, useRef } from 'react';
 import { useTheme } from 'next-themes';
-import type { POI } from '@/types';
+import { useEffect, useRef } from 'react';
 import { useTranslations } from '@/lib/translations';
+import type { POI } from '@/types';
 
 // Fix for default icon issue with Leaflet and Webpack
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -148,6 +147,7 @@ export default function MapView({
   const { resolvedTheme } = useTheme();
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
+  const tileLayerRef = useRef<L.TileLayer | null>(null);
 
   useEffect(() => {
     if (mapContainerRef.current && !mapRef.current) {
@@ -155,30 +155,42 @@ export default function MapView({
         center: [-14.235, -51.925],
         zoom: 4,
       });
-
-      const tileUrl = resolvedTheme === 'dark'
-        ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-        : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
-      
-      const attribution = resolvedTheme === 'dark'
-        ? '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-        : '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
-
-      L.tileLayer(tileUrl, { attribution }).addTo(mapRef.current);
     }
-    
-    // Cleanup function to remove map instance on component unmount
+
     return () => {
       if (mapRef.current) {
         mapRef.current.remove();
         mapRef.current = null;
       }
     };
-  }, [resolvedTheme]); // Re-run effect if theme changes
+  }, []);
+
+  useEffect(() => {
+    if (mapRef.current) {
+      const tileUrl =
+        resolvedTheme === 'dark'
+          ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+          : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+      const attribution =
+        resolvedTheme === 'dark'
+          ? '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+          : '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+
+      if (tileLayerRef.current) {
+        mapRef.current.removeLayer(tileLayerRef.current);
+      }
+      
+      tileLayerRef.current = L.tileLayer(tileUrl, { attribution });
+      tileLayerRef.current.addTo(mapRef.current);
+    }
+  }, [resolvedTheme]);
 
   return (
-    <div className="h-[calc(100vh-150px)] min-h-[600px] w-full rounded-lg shadow-inner overflow-hidden">
-      <div ref={mapContainerRef} style={{ height: '100%', width: '100%' }} />
+    <div className="h-[calc(100vh-150px)] min-h-[600px] w-full rounded-lg shadow-inner overflow-hidden relative">
+      <div
+        ref={mapContainerRef}
+        style={{ height: '100%', width: '100%', zIndex: 0 }}
+      />
       <MapController
         map={mapRef.current}
         points={points}
