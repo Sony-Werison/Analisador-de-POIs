@@ -132,7 +132,24 @@ export default function ComparisonControls({
           )}
           {fileA.headers.length > 0 && (
             <div className="grid grid-cols-2 gap-4">
-              {/* Lat/Lon mapping for File A */}
+              <div>
+                <Label htmlFor="lat-a-select">{t('latitude_column')}</Label>
+                <Select value={fileA.mappedHeaders.lat} onValueChange={(v) => setFileA(f => ({...f, mappedHeaders: {...f.mappedHeaders, lat: v}}))}>
+                  <SelectTrigger id="lat-a-select"><SelectValue placeholder="Selecione" /></SelectTrigger>
+                  <SelectContent>
+                    {fileA.headers.map(h => <SelectItem key={h} value={h}>{h}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="lon-a-select">{t('longitude_column')}</Label>
+                <Select value={fileA.mappedHeaders.lon} onValueChange={(v) => setFileA(f => ({...f, mappedHeaders: {...f.mappedHeaders, lon: v}}))}>
+                  <SelectTrigger id="lon-a-select"><SelectValue placeholder="Selecione" /></SelectTrigger>
+                  <SelectContent>
+                    {fileA.headers.map(h => <SelectItem key={h} value={h}>{h}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           )}
         </CardContent>
@@ -149,7 +166,24 @@ export default function ComparisonControls({
           )}
           {fileB.headers.length > 0 && (
             <div className="grid grid-cols-2 gap-4">
-              {/* Lat/Lon mapping for File B */}
+               <div>
+                <Label htmlFor="lat-b-select">{t('latitude_column')}</Label>
+                <Select value={fileB.mappedHeaders.lat} onValueChange={(v) => setFileB(f => ({...f, mappedHeaders: {...f.mappedHeaders, lat: v}}))}>
+                  <SelectTrigger id="lat-b-select"><SelectValue placeholder="Selecione" /></SelectTrigger>
+                  <SelectContent>
+                    {fileB.headers.map(h => <SelectItem key={h} value={h}>{h}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="lon-b-select">{t('longitude_column')}</Label>
+                <Select value={fileB.mappedHeaders.lon} onValueChange={(v) => setFileB(f => ({...f, mappedHeaders: {...f.mappedHeaders, lon: v}}))}>
+                  <SelectTrigger id="lon-b-select"><SelectValue placeholder="Selecione" /></SelectTrigger>
+                  <SelectContent>
+                    {fileB.headers.map(h => <SelectItem key={h} value={h}>{h}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           )}
         </CardContent>
