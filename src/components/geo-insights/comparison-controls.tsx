@@ -158,18 +158,50 @@ export default function ComparisonControls({
       <Card>
         <CardHeader><CardTitle>{t('comparison_method_title')}</CardTitle></CardHeader>
         <CardContent>
-          <RadioGroup value={comparisonMethod} onValueChange={(v) => setComparisonMethod(v as any)} className="gap-4">
+        <RadioGroup
+            value={comparisonMethod}
+            onValueChange={(v) =>
+              setComparisonMethod(v as ComparisonMethod['type'])
+            }
+            className="gap-4"
+          >
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="m2" id="m2" />
               <Label htmlFor="m2">{t('method_m2')}</Label>
             </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="nearest" id="nearest" />
-              <Label htmlFor="nearest">{t('method_nearest')}</Label>
+            <div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="nearest" id="nearest" />
+                <Label htmlFor="nearest">{t('method_nearest')}</Label>
+              </div>
+              {comparisonMethod === 'nearest' && (
+                <div className="pl-6 pt-2">
+                  <Input
+                    type="number"
+                    value={nearestN}
+                    onChange={(e) => setNearestN(Number(e.target.value))}
+                    className="h-8"
+                    placeholder={t('neighbors') as string}
+                  />
+                </div>
+              )}
             </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="radius" id="radius" />
-              <Label htmlFor="radius">{t('method_radius')}</Label>
+            <div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="radius" id="radius" />
+                <Label htmlFor="radius">{t('method_radius')}</Label>
+              </div>
+              {comparisonMethod === 'radius' && (
+                <div className="pl-6 pt-2">
+                  <Input
+                    type="number"
+                    value={radius}
+                    onChange={(e) => setRadius(Number(e.target.value))}
+                    className="h-8"
+                    placeholder={t('distance_meters') as string}
+                  />
+                </div>
+              )}
             </div>
           </RadioGroup>
         </CardContent>
