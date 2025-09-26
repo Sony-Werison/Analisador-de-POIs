@@ -1,9 +1,9 @@
 'use client';
 
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
-import L, { type LatLngBounds, Map } from 'leaflet';
+import L, { type LatLngBounds } from 'leaflet';
 import 'leaflet.markercluster';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { useTheme } from 'next-themes';
 import type { POI } from '@/types';
 import { useTranslations } from '@/lib/translations';
@@ -153,7 +153,6 @@ export default function MapView({
   return (
     <div className="h-[calc(100vh-150px)] min-h-[600px] w-full rounded-lg shadow-inner overflow-hidden">
       <MapContainer
-        key={resolvedTheme}
         center={[-14.235, -51.925]}
         zoom={4}
         style={{ height: '100%', width: '100%' }}
