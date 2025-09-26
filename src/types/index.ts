@@ -69,4 +69,6 @@ export type ComparisonResult = {
   basePlanilha: 'A' | 'B';
   method: ComparisonMethod;
   totalBasePoints: number;
+  baseFilePois: { pois: POI[], latHeader: string, lonHeader: string };
+  matchFilePois: { pois: POI[], latHeader: string, lonHeader: string };
 };

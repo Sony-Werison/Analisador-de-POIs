@@ -20,7 +20,7 @@ const translations = {
     option_exact_duplicates: 'Verificar duplicatas exatas',
     option_proximity: 'Verificar pontos em proximidade',
     option_geographic: 'Verificar correspondência geográfica',
-    load_map_points: 'Carregar pontos no mapa',
+    load_map_points: 'Carregar Pontos no Mapa',
     processing_message: 'A processar os dados...',
     parsing_message: 'A ler o ficheiro...',
     analyzing_message: (current: number, total: number) =>
@@ -30,6 +30,7 @@ const translations = {
     map_loading_message: (current: number, total: number) =>
       `A carregar pontos: ${current} / ${total}`,
     downloads_title: 'Downloads',
+    actions_title: 'Ações',
     download_full_report_button: 'Relatório Completo (XLSX)',
     download_problems_button: 'Problemas (XLSX)',
     map_title: 'Visualização no Mapa',

@@ -40,6 +40,7 @@ type ControlPanelProps = {
   setHighlightedPoints: (points: POI[]) => void;
   setHighlightedBounds: (bounds: LngLatBounds | undefined) => void;
   allPoints: POI[];
+  handleLoadComparisonOnMap: () => void;
 };
 
 export default function ControlPanel({
@@ -113,6 +114,7 @@ export default function ControlPanel({
           setHighlightedPoints={props.setHighlightedPoints}
           setHighlightedBounds={props.setHighlightedBounds}
           allPoints={props.allPoints}
+          handleLoadComparisonOnMap={props.handleLoadComparisonOnMap}
         />
       </div>
     </Card>

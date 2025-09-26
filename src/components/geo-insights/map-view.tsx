@@ -189,7 +189,7 @@ export default function MapView({
     <div className="h-[calc(100vh-150px)] min-h-[600px] w-full rounded-lg shadow-inner overflow-hidden relative">
       <div
         ref={mapContainerRef}
-        style={{ height: '100%', width: '100%', zIndex: 0 }}
+        style={{ height: '100%', width: '100%', zIndex: 1 }}
       />
       <MapController
         map={mapRef.current}

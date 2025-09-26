@@ -28,7 +28,7 @@ import type { LatLngBounds } from 'leaflet';
 import L from 'leaflet';
 import { downloadXLSX } from '@/lib/xlsx-utils';
 import { useToast } from '@/hooks/use-toast';
-import { AlertTriangle, MapPin, CheckCircle, Copy, Waypoints } from 'lucide-react';
+import { AlertTriangle, MapPin, CheckCircle, Copy, Waypoints, Map } from 'lucide-react';
 
 type Props = {
   analysisResults: {
@@ -42,6 +42,7 @@ type Props = {
   setHighlightedPoints: (points: POI[]) => void;
   setHighlightedBounds: (bounds: LatLngBounds | undefined) => void;
   allPoints: POI[];
+  handleLoadComparisonOnMap: () => void;
 };
 
 const metricItems = [
@@ -68,6 +69,7 @@ export default function AnalysisResults({
   setHighlightedPoints,
   setHighlightedBounds,
   allPoints,
+  handleLoadComparisonOnMap,
 }: Props) {
   const { t } = useTranslations();
   const { toast } = useToast();
@@ -218,8 +220,11 @@ export default function AnalysisResults({
             </div>
           </div>
           <div>
-            <h3 className="text-xl font-bold mt-6 mb-2">{t('downloads_title')}</h3>
-            <Button onClick={handleDownloadComparison} className="w-full">{t('download_comparison_report_button')}</Button>
+            <h3 className="text-xl font-bold mt-6 mb-2">{t('actions_title')}</h3>
+            <div className="grid grid-cols-2 gap-2">
+              <Button onClick={handleLoadComparisonOnMap}><Map className="mr-2" />{t('load_map_points')}</Button>
+              <Button onClick={handleDownloadComparison}>{t('download_comparison_report_button')}</Button>
+            </div>
           </div>
           <h3 className="text-xl font-bold mt-6 mb-2">{t('comparison_results_title')}</h3>
           <div className="max-h-80 overflow-y-auto border rounded-lg">

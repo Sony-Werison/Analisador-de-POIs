@@ -297,6 +297,8 @@ export async function compareFiles({
       basePlanilha: baseSheet,
       method: comparisonMethod,
       totalBasePoints: basePois.length,
+      baseFilePois: { pois: poisA, latHeader: mappedHeadersA.lat!, lonHeader: mappedHeadersA.lon! },
+      matchFilePois: { pois: poisB, latHeader: mappedHeadersB.lat!, lonHeader: mappedHeadersB.lon! }
     };
   }
   
