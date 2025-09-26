@@ -110,9 +110,16 @@ export default function GeocodingControls({
         setIsLoading(false);
     }
   };
+  
+  const addressHeaders = ['name', 'address', 'city', 'state'];
+  const verifyHeaders = ['lat', 'lon', 'state', 'city'];
 
-  const addressHeaders = Object.keys(initialMappedHeaders).slice(0, 4);
-  const coordHeaders = Object.keys(initialMappedHeaders).slice(4);
+  const getLabelKey = (key: string) => {
+    if (geocodeMode === 'geocode') {
+        return `geocode_${key}` as any;
+    }
+    return `${key}_column` as any;
+  }
 
   return (
     <div className="space-y-6 mt-4">
@@ -156,9 +163,9 @@ export default function GeocodingControls({
                 <CardDescription>{geocodeMode === 'verify' ? t('column_mapping_geo_note') : t('column_mapping_geocode_note')}</CardDescription>
             </CardHeader>
             <CardContent className="grid grid-cols-2 gap-4">
-                {(geocodeMode === 'verify' ? [...coordHeaders, 'state', 'city'] : addressHeaders).map(key => (
+                {(geocodeMode === 'verify' ? verifyHeaders : addressHeaders).map(key => (
                      <div key={key}>
-                     <Label htmlFor={`${key}-select-geo`}>{t( (geocodeMode === 'verify' && ['lat', 'lon', 'state', 'city'].includes(key)) ? `${key}_column` as any : `geocode_${key}` as any)}</Label>
+                     <Label htmlFor={`${key}-select-geo`}>{t(getLabelKey(key))}</Label>
                      <Select
                        value={mappedHeaders[key as keyof typeof mappedHeaders]}
                        onValueChange={(value) =>
