@@ -111,6 +111,9 @@ export default function SingleAnalysisControls({
       });
       return;
     }
+    
+    // This check is now only relevant if we add geographic check back to single analysis
+    // For now it can be simplified or removed if geographic is always done elsewhere
     if (
       analysisOptions.geographic &&
       (!mappedHeaders.state || !mappedHeaders.city)
@@ -230,16 +233,6 @@ export default function SingleAnalysisControls({
                   }
                 />
                 <Label htmlFor="proximity" className="font-normal">{t('option_proximity')}</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="geographic"
-                  checked={analysisOptions.geographic}
-                  onCheckedChange={(checked) =>
-                    setAnalysisOptions((prev) => ({ ...prev, geographic: !!checked }))
-                  }
-                />
-                <Label htmlFor="geographic" className="font-normal">{t('option_geographic')}</Label>
               </div>
               <div className="pt-4 border-t">
                 <div className="flex items-center space-x-2">

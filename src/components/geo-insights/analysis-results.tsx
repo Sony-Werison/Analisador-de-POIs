@@ -9,6 +9,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { useTranslations } from '@/lib/translations';
+import { cn } from '@/lib/utils';
 import {
   AnalysisMetrics,
   ComparisonResult,
@@ -36,13 +37,13 @@ type Props = {
 };
 
 const metricItems = [
-    { key: 'totalPois', label: 'total_pois_label' },
-    { key: 'invalidCoordinates', label: 'invalid_coords_label' },
-    { key: 'poisInExactOverlap', label: 'exact_overlap_label' },
-    { key: 'poisInProximity', label: 'proximity_label' },
-    { key: 'stateMismatches', label: 'state_mismatch_label' },
-    { key: 'cityMismatches', label: 'city_mismatch_label' },
-    { key: 'cleanPointsCount', label: 'clean_points_label' },
+    { key: 'totalPois', label: 'total_pois_label', color: 'text-foreground' },
+    { key: 'invalidCoordinates', label: 'invalid_coords_label', color: 'text-destructive' },
+    { key: 'poisInExactOverlap', label: 'exact_overlap_label', color: 'text-destructive' },
+    { key: 'poisInProximity', label: 'proximity_label', color: 'text-destructive' },
+    { key: 'stateMismatches', label: 'state_mismatch_label', color: 'text-destructive' },
+    { key: 'cityMismatches', label: 'city_mismatch_label', color: 'text-destructive' },
+    { key: 'cleanPointsCount', label: 'clean_points_label', color: 'text-green-600' },
   ];
   
   const resultCategories = [
@@ -113,18 +114,22 @@ export default function AnalysisResults({
         <>
           <h3 className="text-xl font-bold">{t('summary_title')}</h3>
           <div className="p-4 rounded-lg bg-secondary/50 space-y-2 text-sm">
-            {metricItems.map(({ key, label }) => (
-                <div key={key} className="flex justify-between items-center">
-                <span className="font-medium text-muted-foreground">{t(label as any)}</span>
-                <span className="font-bold text-lg">{analysisResults.metrics[key as keyof AnalysisMetrics]}</span>
-                </div>
-            ))}
+            {metricItems.map(({ key, label, color }) => {
+                const value = analysisResults.metrics[key as keyof AnalysisMetrics];
+                if (value === 0 && key !== 'cleanPointsCount' && key !== 'totalPois') return null;
+                return(
+                    <div key={key} className="flex justify-between items-center">
+                    <span className="font-medium text-muted-foreground">{t(label as any)}</span>
+                    <span className={cn("font-bold text-lg", value > 0 ? color : 'text-foreground')}>{value}</span>
+                    </div>
+                );
+            })}
           </div>
           <div>
             <h3 className="text-xl font-bold mt-6 mb-2">{t('downloads_title')}</h3>
             <div className="grid grid-cols-2 gap-2">
               <Button onClick={handleDownloadFull}>{t('download_full_report_button')}</Button>
-              <Button onClick={handleDownloadProblems} variant="destructive">{t('download_problems_button')}</Button>
+              <Button onClick={handleDownloadProblems} variant="destructive" disabled={analysisResults.allProblematicPoints.length === 0}>{t('download_problems_button')}</Button>
             </div>
           </div>
           <Accordion type="multiple" className="w-full">
@@ -163,4 +168,3 @@ export default function AnalysisResults({
     </div>
   );
 }
-

@@ -1,6 +1,6 @@
 export type MappedHeaders = {
-  lat: string;
-  lon: string;
+  lat?: string;
+  lon?: string;
   state?: string;
   city?: string;
   name?: string;
@@ -51,6 +51,11 @@ export type AnalysisMetrics = {
 export type GeocodedRow = Record<string, any> & {
   LATITUDE_GEO?: number | string;
   LONGITUDE_GEO?: number | string;
+  ESTADO_DETECTADO?: string | null;
+  CIDADE_DETECTADA?: string | null;
+  CORRESP_ESTADO?: boolean;
+  CORRESP_CIDADE?: boolean;
+  ERRO_VERIFICACAO?: string;
 };
 
 export type ComparisonMethod = {

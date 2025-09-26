@@ -10,6 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useTranslations } from '@/lib/translations';
 import { useToast } from '@/hooks/use-toast';
@@ -24,11 +25,13 @@ type Props = {
   handleClear: () => void;
 };
 
-const initialMappedHeaders: Pick<MappedHeaders, 'name' | 'address' | 'city' | 'state'> = {
+const initialMappedHeaders: Pick<MappedHeaders, 'name' | 'address' | 'city' | 'state' | 'lat' | 'lon'> = {
   name: '',
   address: '',
   city: '',
   state: '',
+  lat: '',
+  lon: '',
 };
 
 export default function GeocodingControls({
@@ -43,6 +46,7 @@ export default function GeocodingControls({
   const [fileName, setFileName] = useState('');
   const [headers, setHeaders] = useState<string[]>([]);
   const [mappedHeaders, setMappedHeaders] = useState(initialMappedHeaders);
+  const [checkGeographic, setCheckGeographic] = useState(false);
 
   const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
@@ -69,10 +73,16 @@ export default function GeocodingControls({
     mapping.address = headers.find((h) => ['endereço', 'endereco', 'logradouro', 'address'].includes(h.toLowerCase()));
     mapping.city = headers.find((h) => ['cidade', 'municipio', 'city'].includes(h.toLowerCase()));
     mapping.state = headers.find((h) => ['estado', 'uf', 'state'].includes(h.toLowerCase()));
+    mapping.lat = headers.find((h) => ['latitude', 'lat'].includes(h.toLowerCase()));
+    mapping.lon = headers.find((h) => ['longitude', 'lon', 'lng'].includes(h.toLowerCase()));
     setMappedHeaders(prev => ({...prev, ...mapping}));
   };
 
-  const isGeocodeDisabled = !file || Object.values(mappedHeaders).every(h => !h);
+  const isGeocodeDisabled = !file || (
+    !checkGeographic && Object.values(mappedHeaders).slice(0, 4).every(h => !h)
+  ) || (
+    checkGeographic && (!mappedHeaders.lat || !mappedHeaders.lon || !mappedHeaders.city || !mappedHeaders.state)
+  );
   
   const handleGeocode = async () => {
     if (isGeocodeDisabled) return;
@@ -83,7 +93,8 @@ export default function GeocodingControls({
             file: file!,
             mappedHeaders,
             setLoadingMessage,
-            t
+            t,
+            checkGeographic,
         });
         setGeocodedResults(results);
         toast({ title: t('geocoding_done')});
@@ -96,8 +107,10 @@ export default function GeocodingControls({
     } finally {
         setIsLoading(false);
     }
-
   };
+
+  const addressHeaders = Object.keys(initialMappedHeaders).slice(0, 4);
+  const coordHeaders = Object.keys(initialMappedHeaders).slice(4);
 
   return (
     <div className="space-y-6 mt-4">
@@ -111,15 +124,31 @@ export default function GeocodingControls({
         </CardContent>
       </Card>
       {headers.length > 0 && (
+        <>
         <Card>
             <CardHeader>
-                <CardTitle>{t('column_mapping_geocode_title')}</CardTitle>
-                <CardDescription>{t('column_mapping_geocode_note')}</CardDescription>
+                <CardTitle>{t('analysis_options_title')}</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <div className="flex items-center space-x-2">
+                    <Checkbox
+                    id="geographic"
+                    checked={checkGeographic}
+                    onCheckedChange={(checked) => setCheckGeographic(!!checked)}
+                    />
+                    <Label htmlFor="geographic" className="font-normal">{t('option_geographic')}</Label>
+                </div>
+            </CardContent>
+        </Card>
+        <Card>
+            <CardHeader>
+                <CardTitle>{checkGeographic ? t('column_mapping_title') : t('column_mapping_geocode_title')}</CardTitle>
+                <CardDescription>{checkGeographic ? t('column_mapping_geo_note') : t('column_mapping_geocode_note')}</CardDescription>
             </CardHeader>
             <CardContent className="grid grid-cols-2 gap-4">
-                {Object.keys(mappedHeaders).map(key => (
+                {(checkGeographic ? [...addressHeaders, ...coordHeaders] : addressHeaders).map(key => (
                      <div key={key}>
-                     <Label htmlFor={`${key}-select-geo`}>{t(`geocode_${key}` as any)}</Label>
+                     <Label htmlFor={`${key}-select-geo`}>{t( (checkGeographic && ['lat', 'lon', 'state', 'city'].includes(key)) ? `${key}_column` as any : `geocode_${key}` as any)}</Label>
                      <Select
                        value={mappedHeaders[key as keyof typeof mappedHeaders]}
                        onValueChange={(value) =>
@@ -139,6 +168,7 @@ export default function GeocodingControls({
                 ))}
             </CardContent>
         </Card>
+        </>
       )}
       <div className="flex gap-4">
         <Button onClick={handleGeocode} className="w-2/3" disabled={isGeocodeDisabled}>

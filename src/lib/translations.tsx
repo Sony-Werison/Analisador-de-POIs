@@ -26,7 +26,7 @@ const translations = {
     analyzing_message: (current: number, total: number) =>
       `Analisando: ${Math.round((current / total) * 100)}%`,
     geocoding_message: (current: number, total: number) =>
-      `Geocodificando: ${current} / ${total}`,
+      `Verificando: ${current} / ${total}`,
     map_loading_message: (current: number, total: number) =>
       `A carregar pontos: ${current} / ${total}`,
     downloads_title: 'Downloads',
@@ -85,19 +85,20 @@ const translations = {
     method_m2: 'Mesmo M²',
     method_nearest: 'N Pontos Mais Próximos',
     method_radius: 'Raio Máximo (metros)',
-    select_file_geocode: 'Selecione a Planilha para Geocodificar',
-    column_mapping_geocode_title: 'Mapeamento de Colunas de Endereço',
+    select_file_geocode: 'Selecione a Planilha',
+    column_mapping_geocode_title: 'Mapeamento para Geocodificação',
     column_mapping_geocode_note:
       'Mapeie as colunas que contêm as informações de endereço. Pelo menos uma deve ser selecionada.',
+    column_mapping_geo_note: 'Mapeie as colunas de coordenadas, estado e cidade para verificação.',
     geocode_name: 'Nome do Local',
     geocode_address: 'Logradouro',
     geocode_city: 'Cidade',
     geocode_state: 'Estado',
-    geocode_button: 'Geocodificar Arquivo',
-    download_geocoded_report_button: 'Baixar Planilha Geocodificada (XLSX)',
+    geocode_button: 'Executar',
+    download_geocoded_report_button: 'Baixar Planilha Resultante (XLSX)',
     geocoding_search_message: (current: number, total: number) =>
-      `Buscando Coordenadas: ${current} / ${total}`,
-    geocoding_done: 'Geocodificação Concluída!',
+      `Processando: ${current} / ${total}`,
+    geocoding_done: 'Processo Concluído!',
     neighbors: 'Vizinhos',
   },
   es: {

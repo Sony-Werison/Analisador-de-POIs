@@ -20,6 +20,16 @@ function processParsedData(
 
   const { lat: latHeader, lon: lonHeader } = mappedHeaders;
   if (!latHeader || !lonHeader) {
+    // This case is for geocoding where lat/lon are not required initially
+    if (data.every(row => !row[latHeader!] && !row[lonHeader!])) {
+        return data.map((row, index) => ({
+            row: index + 2,
+            latitude: null,
+            longitude: null,
+            data: row,
+            status: null,
+        }));
+    }
     throw new Error('Latitude and Longitude columns must be mapped.');
   }
 
@@ -59,47 +69,16 @@ export async function processSingleFile({
   
   const validPois = pois.filter(p => p.latitude !== null && p.longitude !== null);
   const invalidCoordPois = pois.filter(p => p.latitude === null || p.longitude === null);
-  invalidCoordPois.forEach(p => p.status = { type: 'invalid', reason: 'Coordenada inválida'});
-
-  // In a real app, full analysis logic from the prototype would go here.
-  // This is a simplified version.
-  if (analysisOptions.geographic) {
-    let checkedCount = 0;
-    for (const poi of validPois) {
-      setLoadingMessage(t('geocoding_message', checkedCount + 1, validPois.length));
-      try {
-        const result = await geographicConsistencyCheck({
-          latitude: poi.latitude!,
-          longitude: poi.longitude!,
-          state: poi.data[mappedHeaders.state!],
-          city: poi.data[mappedHeaders.city!],
-        });
-
-        poi.detectedState = result.detectedState;
-        poi.detectedCity = result.detectedCity;
-        poi.stateMatch = result.stateMatch;
-        poi.cityMatch = result.cityMatch;
-        
-        if (!result.stateMatch) {
-            poi.status = { type: 'location', reason: 'Estado Incorreto' };
-        } else if (!result.cityMatch) {
-            poi.status = { type: 'location', reason: 'Cidade Incorreta' };
-        } else {
-            poi.status = { type: 'clean', reason: 'Ponto Válido' };
-        }
-
-      } catch (e) {
-        console.error("Error in geographic check", e);
-        poi.status = { type: 'invalid', reason: 'Erro na verificação' };
-      }
-      checkedCount++;
-    }
-  } else {
-    validPois.forEach(p => p.status = { type: 'clean', reason: 'Ponto Válido'});
+  
+  if(analysisOptions.invalidData) {
+    invalidCoordPois.forEach(p => p.status = { type: 'invalid', reason: 'Coordenada inválida'});
   }
 
-  const allProblematicPoints = [...invalidCoordPois, ...validPois.filter(p => p.status?.type !== 'clean')];
-  const cleanPoints = validPois.filter(p => p.status?.type === 'clean');
+  // Simplified analysis logic
+  validPois.forEach(p => p.status = { type: 'clean', reason: 'Ponto Válido'});
+
+  const allProblematicPoints = [...invalidCoordPois.filter(p => p.status)];
+  const cleanPoints = validPois;
 
   return {
     metrics: {
@@ -107,8 +86,8 @@ export async function processSingleFile({
       invalidCoordinates: invalidCoordPois.length,
       poisInProximity: 0, // Simplified
       poisInExactOverlap: 0, // Simplified
-      stateMismatches: validPois.filter(p => p.stateMatch === false).length,
-      cityMismatches: validPois.filter(p => p.cityMatch === false).length,
+      stateMismatches: 0,
+      cityMismatches: 0,
       cleanPointsCount: cleanPoints.length,
     },
     resultGroups: {},
@@ -121,12 +100,14 @@ export async function geocodeFile({
     file,
     mappedHeaders,
     setLoadingMessage,
-    t
+    t,
+    checkGeographic,
 }: {
     file: File;
-    mappedHeaders: Pick<MappedHeaders, 'name' | 'address' | 'city' | 'state'>;
+    mappedHeaders: MappedHeaders;
     setLoadingMessage: (message: string) => void;
     t: (key: any, ...args: any[]) => string;
+    checkGeographic: boolean;
 }): Promise<GeocodedRow[]> {
     setLoadingMessage(t('parsing_message'));
     const { data } = await parseFile(file);
@@ -135,29 +116,58 @@ export async function geocodeFile({
     let processedCount = 0;
     for(const row of data) {
         setLoadingMessage(t('geocoding_search_message', processedCount + 1, data.length));
-        const addressParts = [
-            mappedHeaders.name && row[mappedHeaders.name],
-            mappedHeaders.address && row[mappedHeaders.address],
-            mappedHeaders.city && row[mappedHeaders.city],
-            mappedHeaders.state && row[mappedHeaders.state]
-        ].filter(Boolean);
-
+        
         const newRow: GeocodedRow = {...row};
 
-        if (addressParts.length > 0) {
-            try {
-                const result = await addressToCoordinateGeocoding({ address: addressParts.join(', ') });
-                newRow.LATITUDE_GEO = result.latitude;
-                newRow.LONGITUDE_GEO = result.longitude;
-            } catch (error) {
-                console.error("Geocoding AI error", error);
-                newRow.LATITUDE_GEO = 'ERRO';
-                newRow.LONGITUDE_GEO = 'ERRO';
+        if (checkGeographic) {
+            const latStr = String(row[mappedHeaders.lat!] || '').replace(',', '.');
+            const lonStr = String(row[mappedHeaders.lon!] || '').replace(',', '.');
+            const lat = parseFloat(latStr);
+            const lon = parseFloat(lonStr);
+
+            if (!isNaN(lat) && !isNaN(lon)) {
+                try {
+                    const result = await geographicConsistencyCheck({
+                        latitude: lat,
+                        longitude: lon,
+                        state: row[mappedHeaders.state!],
+                        city: row[mappedHeaders.city!],
+                    });
+                    newRow.ESTADO_DETECTADO = result.detectedState;
+                    newRow.CIDADE_DETECTADA = result.detectedCity;
+                    newRow.CORRESP_ESTADO = result.stateMatch;
+                    newRow.CORRESP_CIDADE = result.cityMatch;
+                } catch (error) {
+                    console.error("Geographic check AI error", error);
+                    newRow.ERRO_VERIFICACAO = 'ERRO_API';
+                }
+            } else {
+                newRow.ERRO_VERIFICACAO = 'COORDENADA_INVALIDA';
             }
         } else {
-            newRow.LATITUDE_GEO = 'DADOS_INSUFICIENTES';
-            newRow.LONGITUDE_GEO = 'DADOS_INSUFICIENTES';
+            const addressParts = [
+                mappedHeaders.name && row[mappedHeaders.name],
+                mappedHeaders.address && row[mappedHeaders.address],
+                mappedHeaders.city && row[mappedHeaders.city],
+                mappedHeaders.state && row[mappedHeaders.state]
+            ].filter(Boolean);
+
+            if (addressParts.length > 0) {
+                try {
+                    const result = await addressToCoordinateGeocoding({ address: addressParts.join(', ') });
+                    newRow.LATITUDE_GEO = result.latitude;
+                    newRow.LONGITUDE_GEO = result.longitude;
+                } catch (error) {
+                    console.error("Geocoding AI error", error);
+                    newRow.LATITUDE_GEO = 'ERRO';
+                    newRow.LONGITUDE_GEO = 'ERRO';
+                }
+            } else {
+                newRow.LATITUDE_GEO = 'DADOS_INSUFICIENTES';
+                newRow.LONGITUDE_GEO = 'DADOS_INSUFICIENTES';
+            }
         }
+        
         geocodedData.push(newRow);
         processedCount++;
         // To avoid rate limits
