@@ -21,7 +21,8 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useTranslations } from '@/lib/translations';
 import { parseFile } from '@/lib/xlsx-utils';
 import { useToast } from '@/hooks/use-toast';
-import type { ComparisonMethod, MappedHeaders } from '@/types';
+import type { ComparisonMethod, MappedHeaders, ComparisonResult } from '@/types';
+import { compareFiles } from '@/lib/analysis-helpers';
 
 type FileState = {
   file: File | null;
@@ -40,7 +41,7 @@ const initialFileState: FileState = {
 type Props = {
   setIsLoading: (loading: boolean) => void;
   setLoadingMessage: (message: string) => void;
-  setComparisonResults: (results: any) => void;
+  setComparisonResults: (results: ComparisonResult | null) => void;
   handleClear: () => void;
 };
 
@@ -102,21 +103,38 @@ export default function ComparisonControls({
     !fileB.mappedHeaders.lon;
 
   const handleCompare = async () => {
-    if (isCompareDisabled) return;
-    // Mock processing logic
+    if (isCompareDisabled || !fileA.file || !fileB.file) return;
+
     setIsLoading(true);
     setLoadingMessage(t('processing_message'));
-    // In a real app, you would call your comparison logic from analysis-helpers.ts
-    // For now, we'll just simulate a delay.
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    setComparisonResults({
-      results: [],
-      sameSquareMatches: [],
-      basePlanilha: 'A',
-      method: { type: 'm2' },
-    });
-    toast({ title: 'Comparação (Simulada)', description: 'Funcionalidade em desenvolvimento.' });
-    setIsLoading(false);
+
+    try {
+        const method: ComparisonMethod = { type: comparisonMethod };
+        if (comparisonMethod === 'nearest') method.value = nearestN;
+        if (comparisonMethod === 'radius') method.value = radius;
+
+        const results = await compareFiles({
+            fileA: fileA.file,
+            fileB: fileB.file,
+            mappedHeadersA: fileA.mappedHeaders,
+            mappedHeadersB: fileB.mappedHeaders,
+            baseSheet,
+            comparisonMethod: method,
+            setLoadingMessage,
+            t,
+        });
+
+        setComparisonResults(results);
+        toast({ title: 'Comparação Concluída' });
+    } catch(error) {
+        toast({
+            variant: 'destructive',
+            title: t('error_generic'),
+            description: error instanceof Error ? error.message : String(error),
+        });
+    } finally {
+        setIsLoading(false);
+    }
   };
 
   return (

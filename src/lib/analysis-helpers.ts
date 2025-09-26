@@ -9,6 +9,8 @@ import type {
   MappedHeaders,
   AnalysisOptions,
   GeocodedRow,
+  ComparisonMethod,
+  ComparisonResult,
 } from '@/types';
 import { parseFile } from './xlsx-utils';
 
@@ -175,3 +177,125 @@ export async function geocodeFile({
     }
     return geocodedData;
 }
+
+
+// Haversine distance calculation
+function haversineDistance(
+    lat1: number,
+    lon1: number,
+    lat2: number,
+    lon2: number
+  ) {
+    const R = 6371e3; // metres
+    const φ1 = (lat1 * Math.PI) / 180;
+    const φ2 = (lat2 * Math.PI) / 180;
+    const Δφ = ((lat2 - lat1) * Math.PI) / 180;
+    const Δλ = ((lon2 - lon1) * Math.PI) / 180;
+  
+    const a =
+      Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+      Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  
+    return R * c; // in metres
+}
+
+export async function compareFiles({
+    fileA,
+    fileB,
+    mappedHeadersA,
+    mappedHeadersB,
+    baseSheet,
+    comparisonMethod,
+    setLoadingMessage,
+    t,
+  }: {
+    fileA: File;
+    fileB: File;
+    mappedHeadersA: Pick<MappedHeaders, 'lat' | 'lon'>;
+    mappedHeadersB: Pick<MappedHeaders, 'lat' | 'lon'>;
+    baseSheet: 'A' | 'B';
+    comparisonMethod: ComparisonMethod;
+    setLoadingMessage: (message: string) => void;
+    t: (key: any, ...args: any[]) => string;
+  }): Promise<ComparisonResult> {
+    setLoadingMessage(t('parsing_message'));
+    const { data: dataA } = await parseFile(fileA);
+    const poisA = processParsedData(dataA, mappedHeadersA).filter(p => p.latitude !== null && p.longitude !== null);
+  
+    const { data: dataB } = await parseFile(fileB);
+    const poisB = processParsedData(dataB, mappedHeadersB).filter(p => p.latitude !== null && p.longitude !== null);
+  
+    const basePois = baseSheet === 'A' ? poisA : poisB;
+    const comparePois = baseSheet === 'A' ? poisB : poisA;
+    const results: any[] = [];
+  
+    let processedCount = 0;
+  
+    for (const basePoi of basePois) {
+      setLoadingMessage(t('comparing_message', processedCount + 1, basePois.length));
+      
+      if(basePoi.latitude === null || basePoi.longitude === null) continue;
+
+      let matches: { poi: POI; distance: number }[] = [];
+  
+      for (const comparePoi of comparePois) {
+        if (comparePoi.latitude === null || comparePoi.longitude === null) continue;
+        const distance = haversineDistance(
+          basePoi.latitude,
+          basePoi.longitude,
+          comparePoi.latitude,
+          comparePoi.longitude
+        );
+        matches.push({ poi: comparePoi, distance });
+      }
+  
+      // Filter and sort matches based on comparison method
+      let finalMatches: any[] = [];
+      switch (comparisonMethod.type) {
+        case 'm2':
+          finalMatches = matches.filter(m => m.distance <= 1).map(m => ({
+            base: basePoi.data,
+            base_row: basePoi.row,
+            match: m.poi.data,
+            match_row: m.poi.row,
+            distance: m.distance,
+          }));
+          break;
+        case 'nearest':
+          finalMatches = matches
+            .sort((a, b) => a.distance - b.distance)
+            .slice(0, comparisonMethod.value || 1)
+            .map(m => ({
+                base: basePoi.data,
+                base_row: basePoi.row,
+                match: m.poi.data,
+                match_row: m.poi.row,
+                distance: m.distance,
+            }));
+          break;
+        case 'radius':
+          finalMatches = matches
+            .filter(m => m.distance <= (comparisonMethod.value || 100))
+            .sort((a, b) => a.distance - b.distance)
+            .map(m => ({
+                base: basePoi.data,
+                base_row: basePoi.row,
+                match: m.poi.data,
+                match_row: m.poi.row,
+                distance: m.distance,
+            }));
+          break;
+      }
+      results.push(...finalMatches);
+      processedCount++;
+    }
+  
+    return {
+      results: results,
+      sameSquareMatches: results.filter(r => r.distance <= 1), // example, can be refined
+      basePlanilha: baseSheet,
+      method: comparisonMethod,
+    };
+  }
+  
