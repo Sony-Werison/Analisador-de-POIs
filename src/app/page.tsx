@@ -47,7 +47,7 @@ export default function Home() {
   const [loadingMessage, setLoadingMessage] = useState('');
   const [mode, setMode] = useState<'single' | 'compare' | 'geocode'>('single');
 
-  const clearState = useCallback(() => {
+  const handleClear = useCallback(() => {
     setAnalysisResults(null);
     setComparisonResults(null);
     setGeocodedResults(null);
@@ -58,10 +58,6 @@ export default function Home() {
     setIsLoading(false);
     setLoadingMessage('');
   }, []);
-
-  const handleClear = useCallback(() => {
-    clearState();
-  }, [clearState]);
 
   const allPoints = useMemo(() => {
     if (analysisResults) {
