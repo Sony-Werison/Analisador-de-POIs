@@ -4,6 +4,7 @@ import { useTranslations } from '@/lib/translations';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import SingleAnalysisControls from './single-analysis-controls';
 import ComparisonControls from './comparison-controls';
+import GeocodingControls from './geocoding-controls';
 import AnalysisResults from './analysis-results';
 import { Card } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
@@ -16,8 +17,8 @@ import type {
 import type { LngLatBounds } from 'leaflet';
 
 type ControlPanelProps = {
-  mode: 'single' | 'compare';
-  setMode: (mode: 'single' | 'compare') => void;
+  mode: 'single' | 'compare' | 'geocode';
+  setMode: (mode: 'single' | 'compare' | 'geocode') => void;
   setIsLoading: (loading: boolean) => void;
   setLoadingMessage: (message: string) => void;
   setAnalysisResults: (results: any) => void;
@@ -52,7 +53,7 @@ export default function ControlPanel({
 
   const onModeChange = (newMode: string) => {
     handleClear();
-    setMode(newMode as 'single' | 'compare');
+    setMode(newMode as 'single' | 'compare' | 'geocode');
   };
 
   return (
@@ -62,9 +63,10 @@ export default function ControlPanel({
           {t('control_title')}
         </h2>
         <Tabs value={mode} onValueChange={onModeChange} className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="single">{t('mode_single')}</TabsTrigger>
             <TabsTrigger value="compare">{t('mode_compare')}</TabsTrigger>
+            <TabsTrigger value="geocode">{t('mode_geocode')}</TabsTrigger>
           </TabsList>
           <TabsContent value="single">
             <SingleAnalysisControls
@@ -81,6 +83,14 @@ export default function ControlPanel({
               setIsLoading={props.setIsLoading}
               setLoadingMessage={props.setLoadingMessage}
               setComparisonResults={props.setComparisonResults}
+              handleClear={handleClear}
+            />
+          </TabsContent>
+          <TabsContent value="geocode">
+            <GeocodingControls
+              setIsLoading={props.setIsLoading}
+              setLoadingMessage={props.setLoadingMessage}
+              setGeocodedResults={props.setGeocodedResults}
               handleClear={handleClear}
             />
           </TabsContent>

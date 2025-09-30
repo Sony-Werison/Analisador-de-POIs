@@ -6,10 +6,8 @@ import type { LngLatBounds } from 'leaflet';
 import { TranslationsProvider } from '@/lib/translations';
 import type {
   AnalysisMetrics,
-  AnalysisOptions,
   ComparisonResult,
   GeocodedRow,
-  MappedHeaders,
   POI,
 } from '@/types';
 import Header from '@/components/geo-insights/header';
@@ -46,7 +44,7 @@ export default function Home() {
   >(undefined);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
-  const [mode, setMode] = useState<'single' | 'compare'>('single');
+  const [mode, setMode] = useState<'single' | 'compare' | 'geocode'>('single');
 
   const clearState = useCallback(() => {
     setAnalysisResults(null);

@@ -216,3 +216,66 @@ export async function compareFiles({
     };
   }
   
+  async function delay(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+  
+  export async function geocodeFile({
+    file,
+    mappedHeaders,
+    setLoadingMessage,
+    t,
+  }: {
+    file: File;
+    mappedHeaders: MappedHeaders;
+    setLoadingMessage: (message: string) => void;
+    t: (key: any, ...args: any[]) => string;
+  }): Promise<GeocodedRow[]> {
+    setLoadingMessage(t('parsing_message'));
+    const { data: rows } = await parseFile(file);
+    
+    const geocodedRows: GeocodedRow[] = [];
+    let processedCount = 0;
+  
+    for (const row of rows) {
+      processedCount++;
+      setLoadingMessage(t('geocoding_search_message', processedCount, rows.length));
+  
+      const addressParts = [
+        row[mappedHeaders.name!],
+        row[mappedHeaders.address!],
+        row[mappedHeaders.city!],
+        row[mappedHeaders.state!],
+      ].filter(Boolean);
+  
+      let geocodedRow: GeocodedRow = { ...row };
+  
+      if (addressParts.length > 0) {
+        const query = encodeURIComponent(addressParts.join(', '));
+        try {
+          // Nominatim API call
+          const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`);
+          if (!response.ok) {
+            throw new Error(`Nominatim API failed with status ${response.status}`);
+          }
+          const results = await response.json();
+  
+          if (results.length > 0) {
+            geocodedRow['LATITUDE_GEO'] = parseFloat(results[0].lat);
+            geocodedRow['LONGITUDE_GEO'] = parseFloat(results[0].lon);
+          } else {
+            geocodedRow['ERRO_VERIFICACAO'] = 'Endereço não encontrado';
+          }
+        } catch (error) {
+          geocodedRow['ERRO_VERIFICACAO'] = error instanceof Error ? error.message : String(error);
+        }
+      } else {
+         geocodedRow['ERRO_VERIFICACAO'] = 'Nenhuma coluna de endereço mapeada';
+      }
+      geocodedRows.push(geocodedRow);
+      // Respect Nominatim's usage policy (max 1 request per second)
+      await delay(1100); 
+    }
+  
+    return geocodedRows;
+  }
