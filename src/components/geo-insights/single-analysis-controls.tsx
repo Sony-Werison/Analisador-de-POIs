@@ -18,6 +18,7 @@ import { parseFile } from '@/lib/xlsx-utils';
 import { useToast } from '@/hooks/use-toast';
 import { processSingleFile } from '@/lib/analysis-helpers';
 import type { AnalysisOptions, MappedHeaders } from '@/types';
+import type { LatLngBounds } from 'leaflet';
 import L from 'leaflet';
 
 type Props = {
@@ -25,7 +26,7 @@ type Props = {
   setLoadingMessage: (message: string) => void;
   setAnalysisResults: (results: any) => void;
   setMapPoints: (points: any[]) => void;
-  setMapBounds: (bounds: any) => void;
+  setMapBounds: (bounds: LatLngBounds | undefined) => void;
   handleClear: () => void;
 };
 

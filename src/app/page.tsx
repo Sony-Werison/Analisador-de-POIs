@@ -3,7 +3,7 @@
 
 import dynamic from 'next/dynamic';
 import { useCallback, useMemo, useState } from 'react';
-import type { LngLatBounds } from 'leaflet';
+import type { LatLngBounds } from 'leaflet';
 import { TranslationsProvider } from '@/lib/translations';
 import type {
   AnalysisMetrics,
@@ -36,12 +36,12 @@ export default function Home() {
   );
 
   const [mapPoints, setMapPoints] = useState<POI[]>([]);
-  const [mapBounds, setMapBounds] = useState<LngLatBounds | undefined>(
+  const [mapBounds, setMapBounds] = useState<LatLngBounds | undefined>(
     undefined
   );
   const [highlightedPoints, setHighlightedPoints] = useState<POI[]>([]);
   const [highlightedBounds, setHighlightedBounds] = useState<
-    LngLatBounds | undefined
+    LatLngBounds | undefined
   >(undefined);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
