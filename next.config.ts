@@ -1,6 +1,7 @@
 import type {NextConfig} from 'next';
 
 const nextConfig: NextConfig = {
+  basePath: '/Analisador-de-POIs',
   output: 'export',
   /* config options here */
   typescript: {
