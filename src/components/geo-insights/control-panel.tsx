@@ -26,7 +26,6 @@ type ControlPanelProps = {
   setComparisonResults: (results: ComparisonResult | null) => void;
   setGeocodedResults: (results: GeocodedRow[] | null) => void;
   setMapPoints: (points: POI[]) => void;
-  setMapBounds: (bounds: LatLngBounds | undefined) => void;
   handleClear: () => void;
   isLoading: boolean;
   loadingMessage: string;
@@ -47,6 +46,7 @@ export default function ControlPanel({
   mode,
   setMode,
   handleClear,
+  setMapPoints,
   ...props
 }: ControlPanelProps) {
   const { t } = useTranslations();
@@ -73,8 +73,7 @@ export default function ControlPanel({
               setIsLoading={props.setIsLoading}
               setLoadingMessage={props.setLoadingMessage}
               setAnalysisResults={props.setAnalysisResults}
-              setMapPoints={props.setMapPoints}
-              setMapBounds={props.setMapBounds}
+              setMapPoints={setMapPoints}
               handleClear={handleClear}
             />
           </TabsContent>
@@ -114,8 +113,7 @@ export default function ControlPanel({
           setHighlightedPoints={props.setHighlightedPoints}
           setHighlightedBounds={props.setHighlightedBounds}
           allPoints={props.allPoints}
-          setMapPoints={props.setMapPoints}
-          setMapBounds={props.setMapBounds}
+          setMapPoints={setMapPoints}
         />
       </div>
     </Card>

@@ -26,10 +26,9 @@ import {
   POI,
 } from '@/types';
 import type { LatLngBounds } from 'leaflet';
-import L from 'leaflet';
 import { downloadXLSX } from '@/lib/xlsx-utils';
 import { useToast } from '@/hooks/use-toast';
-import { AlertTriangle, MapPin, CheckCircle, Copy, Waypoints, Map } from 'lucide-react';
+import { AlertTriangle, MapPin, Copy, Waypoints, Map } from 'lucide-react';
 
 type Props = {
   analysisResults: {
@@ -44,7 +43,6 @@ type Props = {
   setHighlightedBounds: (bounds: LatLngBounds | undefined) => void;
   allPoints: POI[];
   setMapPoints: (points: POI[]) => void;
-  setMapBounds: (bounds: LatLngBounds | undefined) => void;
 };
 
 const metricItems = [
@@ -72,7 +70,6 @@ export default function AnalysisResults({
   setHighlightedBounds,
   allPoints,
   setMapPoints,
-  setMapBounds,
 }: Props) {
   const { t } = useTranslations();
   const { toast } = useToast();
@@ -82,8 +79,10 @@ export default function AnalysisResults({
     setHighlightedPoints(points);
     const validCoords = points.filter(p => p.latitude && p.longitude) as { latitude: number, longitude: number }[];
     if (validCoords.length > 0) {
-        const bounds = L.latLngBounds(validCoords.map(p => [p.latitude, p.longitude]));
-        setHighlightedBounds(bounds);
+        import('leaflet').then(L => {
+            const bounds = L.latLngBounds(validCoords.map(p => [p.latitude, p.longitude]));
+            setHighlightedBounds(bounds);
+        });
     }
   };
 
@@ -175,19 +174,7 @@ export default function AnalysisResults({
     });
     
     setMapPoints(points);
-
-    if (points.length > 0) {
-      const validCoords = points.filter(
-        (p) => p.latitude !== null && p.longitude !== null
-      ) as { latitude: number; longitude: number }[];
-      if (validCoords.length > 0) {
-        const bounds = L.latLngBounds(
-          validCoords.map((p) => [p.latitude, p.longitude])
-        );
-        setMapBounds(bounds);
-      }
-    }
-  }, [comparisonResults, setMapPoints, setMapBounds]);
+  }, [comparisonResults, setMapPoints]);
 
 
   if (!analysisResults && !comparisonResults && !geocodedResults) {

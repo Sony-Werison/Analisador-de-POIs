@@ -1,3 +1,4 @@
+
 'use client';
 import { useState } from 'react';
 import type { ChangeEvent } from 'react';
@@ -17,16 +18,13 @@ import { useTranslations } from '@/lib/translations';
 import { parseFile } from '@/lib/xlsx-utils';
 import { useToast } from '@/hooks/use-toast';
 import { processSingleFile } from '@/lib/analysis-helpers';
-import type { AnalysisOptions, MappedHeaders } from '@/types';
-import type { LatLngBounds } from 'leaflet';
-import L from 'leaflet';
+import type { AnalysisOptions, MappedHeaders, POI } from '@/types';
 
 type Props = {
   setIsLoading: (loading: boolean) => void;
   setLoadingMessage: (message: string) => void;
   setAnalysisResults: (results: any) => void;
   setMapPoints: (points: any[]) => void;
-  setMapBounds: (bounds: LatLngBounds | undefined) => void;
   handleClear: () => void;
 };
 
@@ -35,7 +33,6 @@ export default function SingleAnalysisControls({
   setLoadingMessage,
   setAnalysisResults,
   setMapPoints,
-  setMapBounds,
   handleClear,
 }: Props) {
   const { t } = useTranslations();
@@ -141,19 +138,8 @@ export default function SingleAnalysisControls({
       setAnalysisResults(results);
 
       if (loadMapPoints) {
-        const allPoints = [...results.cleanPoints, ...results.allProblematicPoints];
+        const allPoints: POI[] = [...results.cleanPoints, ...results.allProblematicPoints];
         setMapPoints(allPoints);
-        if (allPoints.length > 0) {
-          const validCoords = allPoints.filter(
-            (p) => p.latitude !== null && p.longitude !== null
-          ) as { latitude: number; longitude: number }[];
-          if (validCoords.length > 0) {
-            const bounds = L.latLngBounds(
-              validCoords.map((p) => [p.latitude, p.longitude])
-            );
-            setMapBounds(bounds);
-          }
-        }
       }
     } catch (error) {
       toast({

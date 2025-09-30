@@ -2,7 +2,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { LatLngBounds } from 'leaflet';
 import { TranslationsProvider } from '@/lib/translations';
 import type {
@@ -73,6 +73,21 @@ export default function Home() {
     return [];
   }, [analysisResults]);
 
+  useEffect(() => {
+    if (mapPoints.length > 0) {
+      const validCoords = mapPoints.filter(
+        (p) => p.latitude !== null && p.longitude !== null
+      ) as { latitude: number; longitude: number }[];
+      
+      if (validCoords.length > 0) {
+        import('leaflet').then(L => {
+          const bounds = L.latLngBounds(validCoords.map(p => [p.latitude, p.longitude]));
+          setMapBounds(bounds);
+        });
+      }
+    }
+  }, [mapPoints]);
+
   return (
     <TranslationsProvider>
       <div className="max-w-screen-2xl mx-auto p-4 md:p-8">
@@ -88,7 +103,6 @@ export default function Home() {
               setComparisonResults={setComparisonResults}
               setGeocodedResults={setGeocodedResults}
               setMapPoints={setMapPoints}
-              setMapBounds={setMapBounds}
               handleClear={handleClear}
               isLoading={isLoading}
               loadingMessage={loadingMessage}
