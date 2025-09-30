@@ -46,7 +46,7 @@ export default function Home() {
   >(undefined);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
-  const [mode, setMode] = useState<'single' | 'compare' | 'geocode'>('single');
+  const [mode, setMode] = useState<'single' | 'compare'>('single');
 
   const clearState = useCallback(() => {
     setAnalysisResults(null);
