@@ -15,7 +15,6 @@ import type {
   GeocodedRow,
   POI,
 } from '@/types';
-import type { LatLngBounds } from 'leaflet';
 
 type ControlPanelProps = {
   mode: 'single' | 'compare' | 'geocode';
@@ -38,7 +37,7 @@ type ControlPanelProps = {
   comparisonResults: ComparisonResult | null;
   geocodedResults: GeocodedRow[] | null;
   setHighlightedPoints: (points: POI[]) => void;
-  setHighlightedBounds: (bounds: LatLngBounds | undefined) => void;
+  setHighlightedBounds: (bounds: any | undefined) => void;
   allPoints: POI[];
 };
 

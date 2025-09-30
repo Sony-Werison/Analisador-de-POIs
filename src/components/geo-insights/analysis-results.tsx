@@ -25,7 +25,6 @@ import {
   GeocodedRow,
   POI,
 } from '@/types';
-import type { LatLngBounds } from 'leaflet';
 import { downloadXLSX } from '@/lib/xlsx-utils';
 import { useToast } from '@/hooks/use-toast';
 import { AlertTriangle, MapPin, Copy, Waypoints, Map } from 'lucide-react';
@@ -40,7 +39,7 @@ type Props = {
   comparisonResults: ComparisonResult | null;
   geocodedResults: GeocodedRow[] | null;
   setHighlightedPoints: (points: POI[]) => void;
-  setHighlightedBounds: (bounds: LatLngBounds | undefined) => void;
+  setHighlightedBounds: (bounds: any | undefined) => void;
   allPoints: POI[];
   setMapPoints: (points: POI[]) => void;
 };
