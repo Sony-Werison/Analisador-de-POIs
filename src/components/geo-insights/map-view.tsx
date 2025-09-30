@@ -2,7 +2,6 @@
 'use client';
 
 import L, { type LatLngBounds } from 'leaflet';
-import 'leaflet.markercluster';
 import { useTheme } from 'next-themes';
 import { useEffect, useRef } from 'react';
 import { useTranslations } from '@/lib/translations';
@@ -53,22 +52,19 @@ function MapController({
   highlightedBounds?: LatLngBounds;
 }) {
   const { t } = useTranslations();
-  const markerClusterGroupRef = useRef<L.MarkerClusterGroup | null>(null);
+  const markersLayerRef = useRef<L.FeatureGroup | null>(null);
   const highlightLayerRef = useRef<L.FeatureGroup | null>(null);
 
   useEffect(() => {
     if (!map) return;
     
-    // Initialize cluster group
-    if (!markerClusterGroupRef.current) {
-        markerClusterGroupRef.current = L.markerClusterGroup();
-        map.addLayer(markerClusterGroupRef.current);
+    if (!markersLayerRef.current) {
+        markersLayerRef.current = L.featureGroup();
+        map.addLayer(markersLayerRef.current);
     }
 
-    const markerClusterGroup = markerClusterGroupRef.current;
-    
-    // Clear existing layers
-    markerClusterGroup.clearLayers();
+    const markersLayer = markersLayerRef.current;
+    markersLayer.clearLayers();
 
     if (points && points.length > 0) {
       const markers = points
@@ -84,7 +80,7 @@ function MapController({
         .filter((m): m is L.Marker => m !== null);
       
       if (markers.length > 0) {
-        markerClusterGroup.addLayers(markers);
+        markers.forEach(marker => markersLayer.addLayer(marker));
       }
     }
   }, [points, map, t]);
@@ -102,7 +98,6 @@ function MapController({
 
   useEffect(() => {
     if (!map) return;
-    // Clear previous highlight
     if (highlightLayerRef.current) {
       map.removeLayer(highlightLayerRef.current);
       highlightLayerRef.current = null;
