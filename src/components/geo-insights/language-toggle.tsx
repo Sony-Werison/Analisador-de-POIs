@@ -9,7 +9,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { Languages } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 
 const languages = [
   {
@@ -67,12 +67,14 @@ const languages = [
 
 export default function LanguageToggle() {
   const { language, setLanguage } = useTranslations();
+  const currentLanguage = languages.find((lang) => lang.code === language);
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="icon">
-          <Languages className="h-[1.2rem] w-[1.2rem]" />
+        <Button variant="outline" size="sm" className="gap-2">
+          {currentLanguage?.flag}
+          <ChevronDown className="h-4 w-4 opacity-50" />
           <span className="sr-only">Change language</span>
         </Button>
       </DropdownMenuTrigger>
