@@ -73,54 +73,6 @@ export default function Home() {
     return [];
   }, [analysisResults]);
 
-  const handleLoadComparisonOnMap = useCallback(async () => {
-    if (!comparisonResults) return;
-
-    // Dynamically import Leaflet only on the client-side
-    const L = (await import('leaflet')).default;
-
-    const points: POI[] = [];
-    const { results, baseFilePois, matchFilePois, basePlanilha } =
-      comparisonResults;
-
-    const basePois = basePlanilha === 'A' ? baseFilePois.pois : matchFilePois.pois;
-    const matchPois = basePlanilha === 'A' ? matchFilePois.pois : baseFilePois.pois;
-    
-    const basePointsSet = new Set<number>();
-    const matchPointsSet = new Set<number>();
-
-    results.forEach((r) => {
-      basePointsSet.add(r.base_row);
-      matchPointsSet.add(r.match_row);
-    });
-
-    basePois.forEach((p) => {
-      if (basePointsSet.has(p.row)) {
-        points.push({ ...p, status: { type: 'base', reason: 'Ponto Base' } });
-      }
-    });
-
-    matchPois.forEach((p) => {
-      if (matchPointsSet.has(p.row)) {
-        points.push({ ...p, status: { type: 'match', reason: 'Ponto Correspondente' } });
-      }
-    });
-    
-    setMapPoints(points);
-
-    if (points.length > 0) {
-      const validCoords = points.filter(
-        (p) => p.latitude !== null && p.longitude !== null
-      ) as { latitude: number; longitude: number }[];
-      if (validCoords.length > 0) {
-        const bounds = L.latLngBounds(
-          validCoords.map((p) => [p.latitude, p.longitude])
-        );
-        setMapBounds(bounds);
-      }
-    }
-  }, [comparisonResults]);
-
   return (
     <TranslationsProvider>
       <div className="max-w-screen-2xl mx-auto p-4 md:p-8">
@@ -146,7 +98,6 @@ export default function Home() {
               setHighlightedPoints={setHighlightedPoints}
               setHighlightedBounds={setHighlightedBounds}
               allPoints={allPoints}
-              handleLoadComparisonOnMap={handleLoadComparisonOnMap}
             />
           </div>
           <div className="lg:col-span-3">

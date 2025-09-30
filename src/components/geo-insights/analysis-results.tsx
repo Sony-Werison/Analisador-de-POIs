@@ -1,5 +1,6 @@
 
 'use client';
+import { useCallback } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -42,7 +43,8 @@ type Props = {
   setHighlightedPoints: (points: POI[]) => void;
   setHighlightedBounds: (bounds: LatLngBounds | undefined) => void;
   allPoints: POI[];
-  handleLoadComparisonOnMap: () => void;
+  setMapPoints: (points: POI[]) => void;
+  setMapBounds: (bounds: LatLngBounds | undefined) => void;
 };
 
 const metricItems = [
@@ -69,7 +71,8 @@ export default function AnalysisResults({
   setHighlightedPoints,
   setHighlightedBounds,
   allPoints,
-  handleLoadComparisonOnMap,
+  setMapPoints,
+  setMapBounds,
 }: Props) {
   const { t } = useTranslations();
   const { toast } = useToast();
@@ -140,6 +143,52 @@ export default function AnalysisResults({
       toast({ description: t('download_no_data') });
     }
   }
+
+  const handleLoadComparisonOnMap = useCallback(async () => {
+    if (!comparisonResults) return;
+
+    const points: POI[] = [];
+    const { results, baseFilePois, matchFilePois, basePlanilha } =
+      comparisonResults;
+
+    const basePois = basePlanilha === 'A' ? baseFilePois.pois : matchFilePois.pois;
+    const matchPois = basePlanilha === 'A' ? matchFilePois.pois : baseFilePois.pois;
+    
+    const basePointsSet = new Set<number>();
+    const matchPointsSet = new Set<number>();
+
+    results.forEach((r) => {
+      basePointsSet.add(r.base_row);
+      matchPointsSet.add(r.match_row);
+    });
+
+    basePois.forEach((p) => {
+      if (basePointsSet.has(p.row)) {
+        points.push({ ...p, status: { type: 'base', reason: 'Ponto Base' } });
+      }
+    });
+
+    matchPois.forEach((p) => {
+      if (matchPointsSet.has(p.row)) {
+        points.push({ ...p, status: { type: 'match', reason: 'Ponto Correspondente' } });
+      }
+    });
+    
+    setMapPoints(points);
+
+    if (points.length > 0) {
+      const validCoords = points.filter(
+        (p) => p.latitude !== null && p.longitude !== null
+      ) as { latitude: number; longitude: number }[];
+      if (validCoords.length > 0) {
+        const bounds = L.latLngBounds(
+          validCoords.map((p) => [p.latitude, p.longitude])
+        );
+        setMapBounds(bounds);
+      }
+    }
+  }, [comparisonResults, setMapPoints, setMapBounds]);
+
 
   if (!analysisResults && !comparisonResults && !geocodedResults) {
     return null;

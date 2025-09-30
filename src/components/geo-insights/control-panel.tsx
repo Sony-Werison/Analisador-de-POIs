@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useTranslations } from '@/lib/translations';
@@ -40,7 +41,6 @@ type ControlPanelProps = {
   setHighlightedPoints: (points: POI[]) => void;
   setHighlightedBounds: (bounds: LatLngBounds | undefined) => void;
   allPoints: POI[];
-  handleLoadComparisonOnMap: () => void;
 };
 
 export default function ControlPanel({
@@ -114,7 +114,8 @@ export default function ControlPanel({
           setHighlightedPoints={props.setHighlightedPoints}
           setHighlightedBounds={props.setHighlightedBounds}
           allPoints={props.allPoints}
-          handleLoadComparisonOnMap={props.handleLoadComparisonOnMap}
+          setMapPoints={props.setMapPoints}
+          setMapBounds={props.setMapBounds}
         />
       </div>
     </Card>
